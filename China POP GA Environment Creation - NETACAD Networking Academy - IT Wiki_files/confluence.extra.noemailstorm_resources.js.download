@@ -1,0 +1,150 @@
+WRMCB=function(e){var c=console;if(c&&c.log&&c.error){c.log('Error running batched script.');c.error(e);}}
+;
+try {
+/* module-key = 'confluence.extra.noemailstorm:resources', location = 'js/no-email-storm.js' */
+/*
+ @context editor
+ */
+(function ($) {
+    var NES_TAG_NAME = "nes-notify";
+
+    AJS.bind('init.rte-control', function () {
+
+        if (!isFullHeightEditorContainer()) {
+            return;
+        }
+
+        $.noemailstorm.init();
+
+        var hasNesLabel = false;
+
+        if (!isScaffoldEditorForm()) {
+            $.ajax({
+                url: AJS.contextPath() + '/rest/api/content/' + AJS.Meta.get('content-id') + '/label',
+                success: function (resp) {
+                    if (Array.isArray(resp.results)) {
+                        resp.results.forEach(function (v, i) {
+                            if (v.name.toLowerCase() === NES_TAG_NAME) {
+                                hasNesLabel = true;
+                            }
+                        });
+
+                        if (hasNesLabel) {
+                            $('button#rte-button-publish').hide();
+                            $('button#save-and-notify').removeClass("save-and-notify");
+                        }
+                    }
+
+                    bindShortcut();
+                },
+                error: function (error) {
+                    console.log("Unable to get page labels.", error);
+                    bindShortcut();
+                }
+            });
+        }
+
+        function bindShortcut() {
+            if (isContentEditor() && ($.nes_change_primary_button || hasNesLabel)) {
+                $('#rte-button-publish').removeClass('aui-button-primary');
+                $('#save-and-notify').addClass('aui-button-primary');
+
+                if (typeof Confluence.KeyboardShortcuts.shortcuts !== 'undefined') {
+                    $.each(Confluence.KeyboardShortcuts.shortcuts, function(i, ks) {
+                        if (ks.param == '#rte-button-publish, #rte-button-overwrite') {
+                            ks.param = '#save-and-notify';
+                        }
+                    });
+                } else {
+                    AJS.bind("shortcuts-loaded.keyboardshortcuts", function (e, data) {
+                        $.each(data.shortcuts, function(i, ks) {
+                            if (ks.param == '#rte-button-publish, #rte-button-overwrite') {
+                                ks.param = '#save-and-notify';
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        function isContentEditor() {
+            return $(document.body).hasClass('contenteditor');
+        }
+
+        function isFullHeightEditorContainer() {
+            var editor = AJS.Rte.getEditor();
+            var $editorArea = $(editor.contentAreaContainer);
+            return $editorArea.hasClass('editor-fullheight');
+        }
+    });
+
+    $.noemailstorm = {
+
+        notifyWatchersCB: null,
+
+        init: function() {
+            var self = this;
+            self.notifyWatchersCB = $('input#notifyWatchers');
+            if (self.isNotifyWatchersCBExist() && !isScaffoldEditorForm()) {
+                self.insertBtn();
+            }
+        },
+
+        insertBtn: function() {
+            var self = this;
+            var btn = self.createBtn();
+            var publishBtn = $('button#rte-button-publish');
+
+            publishBtn.addClass('no-email-storm');
+            self.disableCheckbox();
+            self.notifyWatchersCB.parent().hide();
+
+            publishBtn.parent().css('margin','0').after(btn);
+
+            $("button#save-and-notify").click(function (e) {
+                e.preventDefault();
+                self.notifyWatchersCB.prop('checked', true);
+                $('button#rte-button-publish').click();
+            });
+        },
+
+        createBtn: function() {
+            var blog = AJS.Meta.get('content-type') === 'blogpost';
+            var majorVersion = parseInt(AJS.Meta.get('version-number'), 10);
+            var collaborative = majorVersion >= 6 && AJS.params.collaborativeContent;
+            var buttonTooltip = collaborative ? "Update your page and send notification to all watchers" : "Save your page and send notification to all watchers";
+            var buttonCaption = collaborative ? "Update & Notify" : "Save & Notify";
+
+            // это мегафикс для названия кнопки конфлюенса в немецкой локали, т.к. мы используем глагол в Update & Notify, а они существительное
+            if (AJS.params.userLocale.indexOf('de') != -1 && blog && !collaborative) {
+                $('button#rte-button-publish').html("Publish");
+            }
+
+            return $('<div id="no-email-storm-button-container">' +
+                '<button id="save-and-notify" class="toolbar-trigger aui-button save-and-notify" title="' +
+                (blog && !collaborative ? "Publish your blog post and send notification to all watchers" : buttonTooltip) + '">' +
+                (blog && !collaborative ? "Publish & Notify" : buttonCaption)  + '</button></div>');
+        },
+
+        isNotifyWatchersCBExist: function() {
+            var self = this;
+            return self.notifyWatchersCB.size() > 0 && self.notifyWatchersCB.is(':visible');
+        },
+
+        disableCheckbox: function() {
+            var self = this;
+            setTimeout(function() {
+                if (self.notifyWatchersCB.prop('checked')) {
+                    self.notifyWatchersCB.click();
+                }
+            }, 2000);
+        }
+
+    };
+
+    function isScaffoldEditorForm() {
+        return $('#editpageform.editor.scaffold-form').size() > 0;
+    }
+
+})(AJS.$);
+}catch(e){WRMCB(e)};

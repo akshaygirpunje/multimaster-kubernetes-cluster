@@ -1,0 +1,20 @@
+/* module-key = 'confluence.extra.noemailstorm:resources', location = 'css/no-email-storm.css' */
+#rte-button-publish.no-email-storm {
+	border-bottom-right-radius: 0 !important;
+	border-top-right-radius: 0 !important;
+}
+
+.save-and-notify {
+	border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
+	border-left: 0;
+	cursor: pointer !important;
+}
+
+#no-email-storm-button-container {
+	display: inline-block;
+	margin-right: 10px;
+	float: left;
+}
+
+

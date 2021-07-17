@@ -1,0 +1,28 @@
+
+#header .aui-header  {
+  background: #4d80af;
+  background: -moz-linear-gradient(top,#4d80af 0,#2b5593 99%);
+  background: -webkit-gradient(linear,left top,left bottom,color-stop(0,#4d80af),color-stop(99%,#2b5593));
+  background: -webkit-linear-gradient(top,#4d80af 0,#2b5593 99%);
+  background: -o-linear-gradient(top,#4d80af 0,#2b5593 99%);
+  background: -ms-linear-gradient(top,#4d80af 0,#2b5593 99%);
+  background: linear-gradient(to bottom,#4d80af 0,#2b5593 99%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4d80af', endColorstr='#2b5593', GradientType=0);
+}
+ 
+.confidential_ribbon {
+    background: url("https://www.static-cisco.com/assets/onesearch/images/Confidential-RibbonV2-WHITE-Single.png") repeat-x;
+    display: block;
+    height: 21px;
+}
+ 
+#header .aui-header .aui-nav .aui-button-primary:hover, #header .aui-header .aui-nav .aui-button-primary:focus {
+    background-color: #4D80AF;
+}
+ 
+#header .aui-header .aui-nav .aui-button-primary {
+    background-color: #205081;
+    color: #ffffff;
+}
+
+
